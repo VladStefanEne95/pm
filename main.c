@@ -47,10 +47,10 @@ void initGame(){
 	obstacle[0].x2 = 100;
 	obstacle[0].y2 = 10;
 
-	obstacle[1].x1 = 60;
-	obstacle[1].y1 = 10;
-	obstacle[1].x2 = 60;
-	obstacle[1].y2 = 60;
+	obstacle[1].x1 = 70;
+	obstacle[1].y1 = 30;
+	obstacle[1].x2 = 70;
+	obstacle[1].y2 = 70;
 
 	obstacle[2].x1 = 110;
 	obstacle[2].y1 = 20;
@@ -70,7 +70,7 @@ void initGame(){
 	for(i = 0; i < 80; i++ )
 		if(snake[i] == 1){
 			snake_coord[i].x = i;
-			snake_coord[i].y = 30;
+			snake_coord[i].y = 100;
 		}
 	
 	food.x = rand() % 128;
@@ -87,9 +87,11 @@ void draw_game() {
 	for(i = 0; i <= head; i++ )
 		if(snake[i] == 1){
 			LCD_draw_pixel(snake_coord[i].x, snake_coord[i].y, ST7735_BLACK);
+		else
+			LCD_draw_pixel(snake_coord[i].x, snake_coord[i].y, ST7735_BLUE);
 		}
 	//draw food
-	LCD_draw_pixel(food.x, food.y, ST7735_BLACK);
+	LCD_draw_pixel(food.x, food.y, ST7735_);
 	
 	//draw obstacles
 	for (i = 0;i < num_obs; i++) {
@@ -208,42 +210,38 @@ int main(void){
 	
 	//GFX_draw_line(100, 100, 120, 120, 64);
 	//pull up resistence
-	DDRA &= ~((1 << PA7));
-	DDRA &= ~((1 << PA6));
-	DDRA &= ~((1 << PA5));
-	DDRA &= ~((1 << PA4));
-    PORTA |= (1 << PA7);
-	PORTA |= (1 << PA6);
-	PORTA |= (1 << PA5);
-	PORTA |= (1 << PA4);
+	DDRD &= ~((1 << PA7));
+	DDRD &= ~((1 << PA6));
+	DDRD &= ~((1 << PA5));
+	DDRD &= ~((1 << PA4));
+    PORTD |= (1 << PD0);
+	PORTD |= (1 << PD1);
+	PORTD |= (1 << PD4);
+	PORTD |= (1 << PD5);
 
     while(1){
 		//right - cant switch to right when you go left
-		if((PINA & (1 << PA7)) == 0)
+		if((PIND & (1 << PD0)) == 0)
         {
             if(direction != 1)
 				direction = 3;
         }
-		
-		if((PINA & (1 << PA6)) == 0)
+		else if((PIND & (1 << PD5)) == 0)
         {
             if(direction != 2)
 				direction = 4;
         }
-		
-		if((PINA & (1 << PA5)) == 0)
+		else if((PIND & (1 << PD4)) == 0)
         {
             if(direction != 3)
 				direction = 1;
         }
-		
-		if((PINA & (1 << PA4)) == 0)
+		else if((PIND & (1 << PD1)) == 0)
         {
             if(direction != 4)
 				direction = 2;
         }
 		move_snake();
-		LCD_fill_screen(ST7735_BLUE);
 		draw_game();
 		_delay_ms(300);
     }
