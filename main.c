@@ -92,7 +92,7 @@ void draw_game() {
 	LCD_draw_pixel(food.x, food.y, ST7735_BLACK);
 	
 	//draw obstacles
-	for (i = 0;i < num_obs; i++){
+	for (i = 0;i < num_obs; i++) {
 		GFX_draw_line(obstacle[i].x1, obstacle[i].y1, obstacle[i].x2, obstacle[i].y2, ST7735_BLACK);
 	}
 }
@@ -207,9 +207,15 @@ int main(void){
 	
 	
 	//GFX_draw_line(100, 100, 120, 120, 64);
-	
+	//pull up resistence
 	DDRA &= ~((1 << PA7));
+	DDRA &= ~((1 << PA6));
+	DDRA &= ~((1 << PA5));
+	DDRA &= ~((1 << PA4));
     PORTA |= (1 << PA7);
+	PORTA |= (1 << PA6);
+	PORTA |= (1 << PA5);
+	PORTA |= (1 << PA4);
 
     while(1){
 		//right - cant switch to right when you go left
@@ -219,24 +225,25 @@ int main(void){
 				direction = 3;
         }
 		
-		if((PINA & (1 << PA7)) == 0)
+		if((PINA & (1 << PA6)) == 0)
         {
             if(direction != 2)
 				direction = 4;
         }
 		
-		if((PINA & (1 << PA7)) == 0)
+		if((PINA & (1 << PA5)) == 0)
         {
             if(direction != 3)
 				direction = 1;
         }
 		
-		if((PINA & (1 << PA7)) == 0)
+		if((PINA & (1 << PA4)) == 0)
         {
             if(direction != 4)
 				direction = 2;
         }
 		move_snake();
+		LCD_fill_screen(ST7735_BLUE);
 		draw_game();
 		_delay_ms(300);
     }
