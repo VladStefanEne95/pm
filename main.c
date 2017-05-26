@@ -299,39 +299,35 @@ void move_snake(){
 //left
 	int i  = 0;
 	if(direction == 1){
-		for(i = 0; i < head; i++ )
-			if(snake[i] == 1) {
-				snake_coord[i].x = snake_coord[i+1].x;
-				snake_coord[i].y = snake_coord[i+1].y;
-			}
+		for(i = 0; i < head; i++ ) {
+			snake_coord[i].x = snake_coord[i+1].x;
+			snake_coord[i].y = snake_coord[i+1].y;
+		}
 		snake_coord[head].x -= 1; 
 	}
 	//top
 	else if(direction == 2){
-		for(i = 0; i < head; i++ )
-			if(snake[i] == 1) {
-				snake_coord[i].x = snake_coord[i+1].x;
-				snake_coord[i].y = snake_coord[i+1].y;
-			}
+		for(i = 0; i < head; i++ ) {
+			snake_coord[i].x = snake_coord[i+1].x;
+			snake_coord[i].y = snake_coord[i+1].y;
+		}
 		snake_coord[head].y -= 1; 
 	}
 	//right
 	else if(direction == 3){
-		for(i = 0; i < head; i++ )
-			if(snake[i] == 1) {
-				snake_coord[i].x = snake_coord[i+1].x;
-				snake_coord[i].y = snake_coord[i+1].y;
-			}
+		for(i = 0; i < head; i++ ) {
+			snake_coord[i].x = snake_coord[i+1].x;
+			snake_coord[i].y = snake_coord[i+1].y;
+		}
 		snake_coord[head].x += 1; 
 	}
 	//bottom
 	else if(direction == 4){
-		for(i = 0; i < head; i++ )
-			if(snake[i] == 1) {
+		for(i = 0; i < head; i++ ) {
 				snake_coord[i].x = snake_coord[i+1].x;
 				snake_coord[i].y = snake_coord[i+1].y;
 			}
-		snake_coord[head].y = 1; 
+		snake_coord[head].y += 1; 
 	}
 	
 	if(snake_coord[i].x >= 128)
@@ -363,7 +359,7 @@ void gameStart(){
 int main(void){
     // init the lcd display
 	int game = 1;
-    LCD_init();
+	LCD_init();
 	LCD_fill_screen(ST7735_BLUE);
 	initGame();
 	draw_game();
@@ -444,15 +440,18 @@ int main(void){
 		if (game == 1 && score == 10) {
 			LCD_fill_screen(ST7735_BLUE);
 			_delay_ms(1000);
-			game == 2
+			game = 2;
 			initGame2();
+		}
+		if (game == 2 && score == 20) {
+			while (1)
+				LCD_fill_screen(ST7735_BLUE);
+
 		}
 		my_LCD_fill_screen(ST7735_BLUE);
 		move_snake();
 		draw_game();
     }
-	
-	
 
     return 0;
 }
