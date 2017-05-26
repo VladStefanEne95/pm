@@ -10,10 +10,9 @@
 //draw START 
 int snake[80];
 
-//delay time in ms
-int speed = 300;
 //0-normal; 1-grow twice, 2-shrink, 3-swap commands, 4-reverse move
 int food_type;
+int score;
 int swap;//swap controlls
 
 typedef struct {
@@ -65,11 +64,54 @@ int color2;
 
 }
 
+void initGame2(){
+
+	food_type = 0;
+	swap = 0;
+	score = 0;
+	//init obastacles
+	obstacle[0].x1 = 0;
+	obstacle[0].y1 = 64;
+	obstacle[0].x2 = 127;
+	obstacle[0].y2 = 64;
+
+	obstacle[1].x1 = 64;
+	obstacle[1].y1 = 0;
+	obstacle[1].x2 = 64;
+	obstacle[1].y2 = 127;
+
+	obstacle[2].x1 = 0;
+	obstacle[2].y1 = 0;
+	obstacle[2].x2 = 1;
+	obstacle[2].y2 = 1;
+	
+	int i;
+	//initial size is 20
+	for(i = tail; i < head; i++ )
+		snake[i] = 1;
+	//max size is 80
+	for(i = 0; i < tail; i++ )
+		snake[i] = 0;
+	
+	direction = 0;
+	//start position
+	for(i = -50; i < 80; i++ ) {
+		snake_coord[i].x = i;
+		snake_coord[i].y = 100;
+	}
+	
+	food.x = rand() % 128;
+	food.y = rand() % 128;
+
+	//food on the same line as snake
+	while(food.y == 30)
+		food.y = rand() % 128;
+}
 void initGame(){
 
 	food_type = 0;
 	swap = 0;
-
+	score = 0;
 	//init obastacles
 	obstacle[0].x1 = 10;
 	obstacle[0].y1 = 10;
@@ -96,11 +138,10 @@ void initGame(){
 	
 	direction = 0;
 	//start position
-	for(i = 0; i < 80; i++ )
-		if(snake[i] == 1){
-			snake_coord[i].x = i;
-			snake_coord[i].y = 100;
-		}
+	for(i = 0; i < 80; i++ ) {
+		snake_coord[i].x = i;
+		snake_coord[i].y = 100;
+	}
 	
 	food.x = rand() % 128;
 	food.y = rand() % 128;
@@ -108,6 +149,19 @@ void initGame(){
 	//food on the same line as snake
 	while(food.y == 30)
 		food.y = rand() % 128;
+}
+void my_LCD_fill_screen(uint16_t color)
+{
+	uint8_t x, y;
+	int i;
+	LCD_set_range(0, 0, 127, 127);
+
+	for (y = 128; y > 0; y--)
+		for (x = 128; x > 0; x--)
+			for (i = 0;i < num_obs; i++) 				
+				if(!(x >= obstacle[i].x1 && x <= obstacle[i].x2))
+					if(!(y >= obstacle[i].y1 && y <= obstacle[i].y2))
+						LCD_set_pixel(color);
 }
 
 void draw_game() {
@@ -140,7 +194,7 @@ void draw_game() {
 }
 //RIP
 void game_over(){
-	LCD_fill_screen(ST7735_BLUE);
+	LCD_fill_screen(ST7735_BLACK);
 	int i = 1;
 	while(i){
 		draw_rip(i);
@@ -152,7 +206,7 @@ void game_over(){
 };
 
 
-int check_colision() {
+void check_colision() {
 	int colision_type = 0;
 	int i;
 
@@ -160,6 +214,7 @@ int check_colision() {
 	if(snake_coord[head].x >= food.x && snake_coord[head].x <= food.x+2
 							&& snake_coord[head].y >= food.y && snake_coord[head].y <= food.y+2){
 		colision_type = food_type;
+		score++;
 		if (food_type == 0){
 			tail = tail - 1;
 			snake[tail] = 1;
@@ -167,7 +222,7 @@ int check_colision() {
 		else if (food_type == 1){
 			tail = tail - 2;
 			snake[tail] = 1;
-			snake[tail - 1] = 1;
+			snake[tail + 1] = 1;
 		}
 		else if (food_type == 2){
 			tail = tail + 2;
@@ -177,11 +232,12 @@ int check_colision() {
 		else if (food_type == 3) {
 			swap = swap + 1;
 			swap = swap % 3;
-		} 
+		}
+		
 		else if (food_type == 4) {
 		// swap snake movement direction
 			coord aux;
-			for(i = tail; i < (head + tail)/2; i++){
+			for (i = tail; i < (head + tail)/2; i++){
 				aux.x = snake_coord[i].x;
 				aux.y = snake_coord[i].y;
 				snake_coord[i].x = snake_coord[head - i + tail].x;
@@ -189,7 +245,7 @@ int check_colision() {
 				snake_coord[head - i + tail].x = aux.x;
 				snake_coord[head - i + tail].y = aux.y;
 			}
-			for(i = 0; i < tail; i++) {
+			for (i = 0; i < tail; i++) {
 				snake_coord[i].x = snake_coord[tail].x;
 				snake_coord[i].y = snake_coord[tail].y - i - 1;
 			}
@@ -206,6 +262,7 @@ int check_colision() {
 		food.y = rand() % 128;
 		//power up type
 		food_type = rand() % 5;
+		//check if fruit placement is ok
 		for(i = 0; i < head; i++ )
 			if(snake[i] == 1) {
 				if(snake_coord[head].x == food.x && snake_coord[head].y == food.y){
@@ -214,6 +271,14 @@ int check_colision() {
 					i = 0;
 				}
 			}
+		
+		for (i = 0;i < num_obs; i++)	
+			if(food.x >= obstacle[i].x1 && food.x <= obstacle[i].x2)
+				if(food.y >= obstacle[i].y1 &&  food.y <= obstacle[i].y2){
+					food.x = rand() % 128;
+					food.y = rand() % 128;
+					i = 0;
+				}
 	}
 	//check collision with walls
 	for (i = 0;i < num_obs; i++)	
@@ -227,7 +292,6 @@ int check_colision() {
 			if(snake_coord[head].x == snake_coord[i].x && snake_coord[head].x == snake_coord[i].y)
 				game_over();
 	}
-	return colision_type;
 }
 
 
@@ -270,15 +334,15 @@ void move_snake(){
 		snake_coord[head].y = 1; 
 	}
 	
-	if(snake_coord[i].x > 128)
+	if(snake_coord[i].x >= 128)
 		snake_coord[i].x = snake_coord[i].x % 128;
-	if(snake_coord[i].y > 128)
+	if(snake_coord[i].y >= 128)
 		snake_coord[i].y = snake_coord[i].y % 128;
 	if(snake_coord[i].x < 0)
 		snake_coord[i].x = snake_coord[i].x + 128;
 	if(snake_coord[i].y < 0)
 		snake_coord[i].y = snake_coord[i].y + 128;
-	int result = check_colision();
+	check_colision();
 	
 }
 
@@ -298,6 +362,7 @@ void gameStart(){
 
 int main(void){
     // init the lcd display
+	int game = 1;
     LCD_init();
 	LCD_fill_screen(ST7735_BLUE);
 	initGame();
@@ -376,10 +441,18 @@ int main(void){
 					direction = 2;
 			}
 		}
-		LCD_fill_screen(ST7735_BLUE);
+		if (game == 1 && score == 10) {
+			LCD_fill_screen(ST7735_BLUE);
+			_delay_ms(1000);
+			game == 2
+			initGame2();
+		}
+		my_LCD_fill_screen(ST7735_BLUE);
 		move_snake();
 		draw_game();
     }
+	
+	
 
     return 0;
 }
