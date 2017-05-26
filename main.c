@@ -14,6 +14,7 @@ int snake[80];
 int food_type;
 int score;
 int swap;//swap controlls
+int delay;
 
 typedef struct {
     int x;
@@ -52,7 +53,7 @@ int color2;
 	GFX_draw_line(10, 10, 10, 40, color2);
 	GFX_draw_line(10, 40, 40, 40, color2);
 	GFX_draw_line(10, 40, 40, 70, color2);
-	GFX_draw_line(10, 70, 40, 70, color2);
+	GFX_draw_line(10, 40, 10, 70, color2);
 //I
 	GFX_draw_line(50, 10, 50, 70, color2);
 //P
@@ -66,6 +67,7 @@ int color2;
 
 void initGame2(){
 
+	delay = 1000;
 	food_type = 0;
 	swap = 0;
 	score = 0;
@@ -95,8 +97,8 @@ void initGame2(){
 	
 	direction = 0;
 	//start position
-	for(i = -50; i < 80; i++ ) {
-		snake_coord[i].x = i;
+	for(i = tail; i < 80; i++ ) {
+		snake_coord[i].x = i+ 20;
 		snake_coord[i].y = 100;
 	}
 	
@@ -104,11 +106,13 @@ void initGame2(){
 	food.y = rand() % 128;
 
 	//food on the same line as snake
-	while(food.y == 30)
-		food.y = rand() % 128;
+	//while(food.y == 30)
+		//food.y = rand() % 128;
 }
 void initGame(){
 
+
+	delay = 2000;
 	food_type = 0;
 	swap = 0;
 	score = 0;
@@ -174,6 +178,7 @@ void draw_game() {
 		else // clean snake tail
 			LCD_draw_pixel(snake_coord[i].x, snake_coord[i].y, ST7735_BLUE);
 		
+	LCD_draw_pixel(snake_coord[tail].x, snake_coord[tail].y, ST7735_BLUE);
 	//draw food
 	if (food_type == 1){
 		LCD_draw_pixel(food.x, food.y, ST7735_RED);
@@ -211,13 +216,27 @@ void check_colision() {
 	int i;
 
 	//check with food
-	if(snake_coord[head].x >= food.x && snake_coord[head].x <= food.x+2
-							&& snake_coord[head].y >= food.y && snake_coord[head].y <= food.y+2){
+	if(snake_coord[head].x >= food.x && snake_coord[head].x <= food.x+3
+							&& snake_coord[head].y >= food.y && snake_coord[head].y <= food.y+3){
+		LCD_fill_screen(ST7735_BLUE);
 		colision_type = food_type;
 		score++;
 		if (food_type == 0){
 			tail = tail - 1;
 			snake[tail] = 1;
+			/*
+						tail = tail - 10;
+			snake[tail+9] = 1;
+			snake[tail+8] = 1;
+			snake[tail+7] = 1;
+			snake[tail+6] = 1;
+			snake[tail+5] = 1;
+			snake[tail+4] = 1;
+			snake[tail+3] = 1;
+			snake[tail+2] = 1;
+			snake[tail+1] = 1;
+
+			*/
 		}
 		else if (food_type == 1){
 			tail = tail - 2;
@@ -257,11 +276,17 @@ void check_colision() {
 				direction = 4;
 			else if (direction == 4)
 				direction = 2;
+		} 
+		else if (food_type == 5) {
+			delay += 300;
+		}
+		else if (food_type == 6) {
+			delay -= 300;
 		}
 		food.x = rand() % 128;
 		food.y = rand() % 128;
 		//power up type
-		food_type = rand() % 5;
+		food_type = rand() % 7;
 		//check if fruit placement is ok
 		for(i = 0; i < head; i++ )
 			if(snake[i] == 1) {
@@ -289,7 +314,7 @@ void check_colision() {
 	//check collision with tail
 	for(i = 0; i < head; i++ )
 		if(snake[i] == 1) {
-			if(snake_coord[head].x == snake_coord[i].x && snake_coord[head].x == snake_coord[i].y)
+			if(snake_coord[head].x == snake_coord[i].x && snake_coord[head].y == snake_coord[i].y)
 				game_over();
 	}
 }
@@ -381,20 +406,20 @@ int main(void){
 		// normal commands
 		if (swap == 0) {
 			//right - cant switch to right when you go left 
-			if((PIND & (1 << PD0)) == 0) {
+			if((PIND & (1 << PD5)) == 0) {
 				if(direction != 1)
 					direction = 3;
 			}
-			else if((PIND & (1 << PD4)) == 0) {
+			else if((PIND & (1 << PD0)) == 0) {
 				if(direction != 2)
 					direction = 4;
 			}
 			//cant move to left if the snake is oriented to right at begin
-			else if(direction && (PIND & (1 << PD5)) == 0) {
+			else if(direction && (PIND & (1 << PD1)) == 0) {
 				if(direction != 3)
 					direction = 1;
 			}
-			else if((PIND & (1 << PD1)) == 0) {
+			else if((PIND & (1 << PD4)) == 0) {
 				if(direction != 4)
 					direction = 2;
 			}
@@ -437,9 +462,9 @@ int main(void){
 					direction = 2;
 			}
 		}
-		if (game == 1 && score == 10) {
+		if (game == 1 && score == 2) {
 			LCD_fill_screen(ST7735_BLUE);
-			_delay_ms(1000);
+			//_delay_ms(1000);
 			game = 2;
 			initGame2();
 		}
@@ -448,7 +473,9 @@ int main(void){
 				LCD_fill_screen(ST7735_BLUE);
 
 		}
-		my_LCD_fill_screen(ST7735_BLUE);
+		//my_LCD_fill_screen(ST7735_BLUE);
+		_delay_ms(delay);
+		
 		move_snake();
 		draw_game();
     }
